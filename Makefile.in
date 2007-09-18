@@ -2,8 +2,8 @@ CC=@CC@
 bindir=@exedir@
 mandir=@mandir@
 
-rgrep: rgrep.c config.h regex/libregex.a
-	$(CC) -o rgrep rgrep.c regex/libregex.a -ltermcap
+rgrep: rgrep.c config.h regex/libregex.a VERSION
+	$(CC) -o rgrep -DVERSION=\"`cat VERSION`\" rgrep.c regex/libregex.a -ltermcap
 
 regex/libregex.a:
 	cd regex && make lib
@@ -23,4 +23,4 @@ spotless distclean: clean
 	
 clean:
 	cd regex && make clean
-	rm -f rgrep
+	rm -f rgrep version.c

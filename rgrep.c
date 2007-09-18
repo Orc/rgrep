@@ -132,6 +132,7 @@ usage(int retcode, char *fmt, ...)
    -x'ext' Checks only files with extension given by 'ext'.\n\
    -D      Print all directories that would be searched.  This option is for\n\
 	   debugging purposes only.  No file is grepped with this option.\n\
+   -V      Print the version#\n\
    -W'len' Lines are 'len' characters long (not newline terminated).\n";
 
     if (fmt) {
@@ -475,7 +476,7 @@ char **argv;
     
     opterr = 1;
     
-    while ( (opt = getopt(argc,argv,"cehHilnFrNR:vx:DW:?")) != EOF ) {
+    while ( (opt = getopt(argc,argv,"cehHilnFrNR:vx:DVW:?")) != EOF ) {
 	switch (opt) {
 	case 'c':   countmatches = 1; break;
 	case 'e':   regflags = REG_EXTENDED;
@@ -500,6 +501,7 @@ char **argv;
 		    filepattern = &filetemplate;
 		    break;
 	case 'v':   except = 1; break;
+	case 'V':   printf("rgrep v%s\n", VERSION); exit(EX_OK);
 	case 'D':   debug = 1; break;
 	case 'W':   {   char *n;
 			reclen = strtoul(optarg, &n, 10);
