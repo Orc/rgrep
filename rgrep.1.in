@@ -99,11 +99,9 @@ two (so
 would mean to match any lowercase character, and
 .Ar [0-9]
 would match any single digit.
-.It Li \e Ns Li { Ns Ar min Ns , Ns Ar max Ns Li \e Ns Li }
+.It Li \e Ns Li { Ns Ar num Ns Li \e Ns Li }
 Match 
-.Ar min
-to
-.Ar max
+.Ar num
 instances of the previous RE.
 .It Li \e Ns Li ( Ar RE Ns Li \e Ns Li )
 Match RE as a subexpression.
@@ -111,11 +109,13 @@ Match RE as a subexpression.
 Match what was matched by the <digit>'th \e Ns ( RE \e Ns ) subexpression.
 .El
 .Sh BUGS
-The
+1. The
 .Li \e Ns d
-metacharacter is not implemented, so if you need to match a single
-character you need to do
-.Ar [0-9] .
+metacharacter is not implemented.
+.br
+2. The
+.Li \e Ns Li { Ns Ar ... Ns Li \e Ns Li }
+command is not fully implemented.
 .Sh AUTHOR
 David Parsons (<orc@pell.chi.il.us>)
 .br

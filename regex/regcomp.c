@@ -340,13 +340,7 @@ register struct parse *p;
 		ASTERN(O_PLUS, pos);
 		break;
 	case '?':
-		/* KLUDGE: emit y? as (y|) until subtle bug gets fixed */
-		INSERT(OCH_, pos);		/* offset slightly wrong */
-		ASTERN(OOR1, pos);		/* this one's right */
-		AHEAD(pos);			/* fix the OCH_ */
-		EMIT(OOR2, 0);			/* offset very wrong... */
-		AHEAD(THERE());			/* ...so fix it */
-		ASTERN(O_CH, THERETHERE());
+		repeat(p, pos, 0, 1);
 		break;
 	case '{':
 		count = p_count(p);
@@ -529,11 +523,15 @@ int starordinary;		/* is a leading * an ordinary character? */
 		ASTERN(O_PLUS, pos);
 		INSERT(OQUEST_, pos);
 		ASTERN(O_QUEST, pos);
+	} else if (EAT('?')) {
+		INSERT(OQUEST_, pos);
+		ASTERN(O_QUEST, pos);
 	} else if (EAT('+')) {
 		INSERT(OPLUS_, pos);
 		ASTERN(O_PLUS, pos);
 	} else if (EATTWO('\\', '{')) {
 		count = p_count(p);
+#if REPEAT_WORKS_NOW
 		if (EAT(',')) {
 			if (MORE() && isdigit(PEEK())) {
 				count2 = p_count(p);
@@ -541,6 +539,7 @@ int starordinary;		/* is a leading * an ordinary character? */
 			} else		/* single number with comma */
 				count2 = INFINITY;
 		} else		/* just a single number */
+#endif
 			count2 = count;
 		repeat(p, pos, count, count2);
 		if (!EATTWO('\\', '}')) {	/* error heuristics */
