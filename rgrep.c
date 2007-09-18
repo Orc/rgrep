@@ -223,10 +223,12 @@ char *
 fgetblk(FILE *f, size_t *size)
 {
     static char *recbfr = 0;
-    int sz;
+    static int bufsize = 0;
+    int sz = 0;
+    
     
     if (reclen) {
-	if ( (recbfr == 0) && ((recbfr = malloc(reclen)) == 0) )
+	if ( (recbfr == 0) && ((recbfr = malloc(bufsize = reclen)) == 0) )
 	    error("runtime error: %s", strerror(errno));
 	sz = fread(recbfr, 1, reclen, f);
 
@@ -234,7 +236,30 @@ fgetblk(FILE *f, size_t *size)
 	if (sz < reclen) bzero(recbfr+sz, reclen-sz);
 	return recbfr;
     }
-    else return fgetln(f, size);
+
+#if HAVE_FGETLN
+    return fgetln(f, size);
+#else
+    sz = 0;
+    while (1) {
+	register c;
+
+	if (sz >= bufsize) {
+	    bufsize += 1000;
+	    recbfr = recbfr ? realloc(recbfr, bufsize) : malloc(bufsize);
+
+	    if (recbfr == 0)
+		error("runtime error: %s", strerror(errno));
+	}
+
+	if ( ((c = getchar()) == EOF) || (c == '\n') ) {
+	    recbfr[sz] = 0;
+	    return (c == '\n') || (sz > 0) ? recbfr : 0;
+	}
+	
+	recbfr[sz++] = c;
+    }
+#endif
 }
 
 int
