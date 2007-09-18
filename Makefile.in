@@ -2,8 +2,11 @@ CC=@CC@
 bindir=@bindir@
 mandir=@mandir@
 
-rgrep: rgrep.c config.h
-	$(CC) -o rgrep rgrep.c -ltermcap
+rgrep: rgrep.c config.h regex/libregex.a
+	$(CC) -o rgrep rgrep.c regex/libregex.a -ltermcap
+
+regex/libregex.a:
+	cd regex && make lib
 
 install: install-bin install-man
 
@@ -19,4 +22,5 @@ spotless distclean: clean
 	rm -f @GENERATED_FILES@ @CONFIGURE_FILES@
 	
 clean:
+	cd regex && make clean
 	rm -f rgrep

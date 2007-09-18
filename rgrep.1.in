@@ -17,10 +17,9 @@
 recursively searches files in the named paths (or searches stdin if
 no arguments are given) for lines containing the given
 .Ar pattern .
-
+.Pp
 Like the more-traditional grep, it has many options that change
 how it works, but many of these options are subtly different:
-
 .Bl -tag -width Fl
 .It Li -c
 Count matches;  don't print the lines that contain the patterns,
@@ -65,7 +64,72 @@ Input files contain fixed-length records
 .Ar len
 characters long.
 .El
-
+The regular expression format that
+.Nm
+uses is a slightly extended version of the "basic" regular expressions
+used in Henry Spencer's regex library.  Regular expressions are made
+up of plain text, plus the following special characters:
+.Bl -tag -width Fl
+.It Li \.
+Match any single character except newlines.
+.It Li \e Ns d
+Match any digit.
+.It Li \e Ns e
+Match the ESCAPE character.
+.It Li *
+Match zero or more of the previous RE.
+.It Li +
+Match one or more of the previous RE.
+.It Li ?
+Match zero or one of the previous RE.
+.It Li ^
+Match beginning of line.
+.It Li $
+Match end of line.
+.It Li [ Ns Ar ... Ns Li ]
+Matches any single character between the brackets.  As special cases,
+a leading
+.Li ^
+means match everything EXCEPT the characters between the branches,
+and a
+.Li -
+between two characters means to match any character between those
+two (so
+.Ar [a-z]
+would mean to match any lowercase character, and
+.Ar [0-9]
+would match any single digit.
+.It Li \e Ns Li { Ns Ar min Ns , Ns Ar max Ns Li \e Ns Li }
+Match 
+.Ar min
+to
+.Ar max
+instances of the previous RE.
+.It Li \e Ns Li ( Ar RE Ns Li \e Ns Li )
+Match RE as a subexpression.
+.It Li \e Ns Ar <digit>
+Match what was matched by the <digit>'th \e Ns ( RE \e Ns ) subexpression.
+.El
+.Sh BUGS
+The
+.Li \e Ns d
+metacharacter is not implemented, so if you need to match a single
+character you need to do
+.Ar [0-9] .
+.Sh AUTHOR
+David Parsons (<orc@pell.chi.il.us>)
+.br
+The regular expression code is Henry Spencer's regex code slightly
+modified to support the
+.Ar \e Ns e
+and
+.Ar +
+metacharacters.
+.Sh COPYRIGHT
+.Nm
+is Copyright 2007 by David Parsons.
+.br
+The regex library is Copyright 1992, 1993, 1994, 1997 Henry Spencer.
 .Sh SEE ALSO
 .Xr grep 1 ,
 .Xr re_format 7

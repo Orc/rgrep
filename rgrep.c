@@ -40,7 +40,6 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <regex.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -55,6 +54,8 @@
 #include <dirent.h>
 #include <curses.h>
 #include <term.h>
+
+#include "regex/regex.h"
 
 
 char *pgm = "rgrep";
