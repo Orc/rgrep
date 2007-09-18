@@ -99,11 +99,15 @@ two (so
 would mean to match any lowercase character, and
 .Ar [0-9]
 would match any single digit.
-.It Li \e Ns Li { Ns Ar num Ns Li \e Ns Li }
+.It Li \e Ns <
+Match the beginning of a word.
+.It Li \e Ns >
+Match the end of a word.
+.It Li \e{ Ar num Li \e}
 Match 
 .Ar num
 instances of the previous RE.
-.It Li \e Ns Li ( Ar RE Ns Li \e Ns Li )
+.It Li \e( Ar RE Li \e)
 Match RE as a subexpression.
 .It Li \e Ns Ar <digit>
 Match what was matched by the <digit>'th \e Ns ( RE \e Ns ) subexpression.
@@ -114,17 +118,18 @@ Match what was matched by the <digit>'th \e Ns ( RE \e Ns ) subexpression.
 metacharacter is not implemented.
 .br
 2. The
-.Li \e Ns Li { Ns Ar ... Ns Li \e Ns Li }
+.Li \e{ Ar ... Li \e}
 command is not fully implemented.
 .Sh AUTHOR
 David Parsons (<orc@pell.chi.il.us>)
 .br
-The regular expression code is Henry Spencer's regex code slightly
-modified to support the
-.Ar \e Ns e
+The regular expression code is Henry Spencer's regex code (modified to support 
+.Ar \e< ,
+.Ar \e> ,
+.Ar \ee ,
+.Ar ? ,
 and
-.Ar +
-metacharacters.
+.Ar + Ns \.)
 .Sh COPYRIGHT
 .Nm
 is Copyright 2007 by David Parsons.

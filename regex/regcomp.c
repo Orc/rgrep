@@ -509,6 +509,12 @@ int starordinary;		/* is a leading * an ordinary character? */
 	case '*':
 		REQUIRE(starordinary, REG_BADRPT);
 		/* FALLTHROUGH */
+	case BACKSL|'<':
+		EMIT(OBOW, 0);
+		break;
+	case BACKSL|'>':
+		EMIT(OEOW, 0);
+		break;
 	case BACKSL|'e':
 		ordinary(p, '\033');	/* match an ESC */
 		break;
