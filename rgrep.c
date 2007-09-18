@@ -119,8 +119,8 @@ usage(int retcode, char *fmt, ...)
     static char *flagstr = "\
    -c      Count matches.\n\
    -e      Use extended regular expression syntax\n\
-   -h      Highlight lines containing matches.\n\
-   -H      Highlight match instead of entire line containing match.\n\
+   -h      Highlight matched text on lines containing matches.\n\
+   -H      Print match instead of entire line containing match.\n\
    -i      Ignore case.\n\
    -l      List filename only.\n\
    -n      Print line number of match.\n\
