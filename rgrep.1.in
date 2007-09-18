@@ -27,9 +27,10 @@ just the matches.
 .It Li -e
 Use POSIX-style regular expressions.
 .It Li -h
-Highlight line that match the pattern.
+When displaying lines that matches, highlight the text that matches the pattern.
 .It Li -H
-Highlight the text that matches the pattern.
+Don't display lines that match the pattern, display the text
+that matches the pattern.
 .It Li -i
 Ignore case.
 .It Li -l

@@ -62,7 +62,7 @@ char *pgm = "rgrep";
 regex_t pattern;
 
 int countmatches = 0;	/* count matches, don't show them */
-enum {NONE,LINE,EXACT} highlight = NONE;
+enum {LINE,HIGHLIGHT,EXACT} display = LINE;
 int except = 0;		/* show lines that DON'T match the pattern */
 int ignorecase = 0;
 int listonly = 0;	/* list files that match the pattern */
@@ -153,26 +153,37 @@ safewrite(regmatch_t lim[], char *start, char *end)
 {
     register so=0, i, c;
     
-    if ( lim && (highlight == LINE) && (lim[0].rm_so >= 0) ) {
-	so = 1;
-	tputs(SO, 1, putchar);
-    }
-    
     i = 0;
-    while (start+i < end) {
-	if ( lim && (highlight == EXACT) && (lim[0].rm_so == i) ) {
-	    so = 1;
-	    tputs(SO, 1, putchar);
-	}
-	c = start[i++];
-	if ( (c == '\t') || (isprint(c) && c != '\r' && c != '\n') )
-	    putchar(c);
-	else
-	    putchar('?');
-	if ( lim && (highlight == EXACT) && (lim[0].rm_eo == i) ) {
-	    so = 0;
-	    tputs(SE, 1, putchar);
-	}
+
+    switch (display) {
+    case EXACT:
+	    if (lim) {
+		for (i=lim[0].rm_so; (start+i < end) && i < lim[0].rm_eo; i++) {
+		    c = start[i];
+		    if ( c == '\t' || (isprint(c) && (c != '\r' && c != '\n')) )
+			putchar(c);
+		    else
+			putchar('?');
+		}
+		break;
+	    }
+    default:
+	    while (start+i < end) {
+		if ( lim && (display == HIGHLIGHT) && (lim[0].rm_so == i) ) {
+		    so = 1;
+		    tputs(SO, 1, putchar);
+		}
+		c = start[i++];
+		if ( (c == '\t') || (isprint(c) && c != '\r' && c != '\n') )
+		    putchar(c);
+		else
+		    putchar('?');
+		if ( lim && (display == HIGHLIGHT) && (lim[0].rm_eo == i) ) {
+		    so = 0;
+		    tputs(SE, 1, putchar);
+		}
+	    }
+	    break;
     }
 
     if (so)
@@ -205,13 +216,13 @@ match(char *path, int lineno, char *start, char *end)
     rc = regexec(&pattern, start, 11, matches, REG_STARTEND|REG_BACKR);
 
     if (rc == 0) { /* found */
-	if ( except /*&& (highlight == NONE)*/ ) return 0;
+	if ( except ) return 0;
 	if ( listonly || countmatches ) return 1;
 	showmatch(matches, path, lineno, start, end);
 	return (rc == 0);
     }
     else if (rc == REG_NOMATCH) {
-	if ( !except /*&& (highlight == NONE)*/ ) return 0;
+	if ( !except ) return 0;
 	if ( listonly || countmatches ) return 1;
 	showmatch(0, path, lineno, start, end);
 	return (rc == REG_NOMATCH);
@@ -479,8 +490,8 @@ char **argv;
 	switch (opt) {
 	case 'c':   countmatches = 1; break;
 	case 'e':   regflags = REG_EXTENDED;
-	case 'h':   highlight = LINE; break;
-	case 'H':   highlight = EXACT; break;
+	case 'h':   display = HIGHLIGHT; break;
+	case 'H':   display = EXACT; break;
 	case 'i':   ignorecase = 1; break;
 	case 'l':   listonly = 1; break;
 	case 'n':   linenumbers = 1; break;
@@ -526,7 +537,7 @@ char **argv;
     if (ret != 0)
 	error("unrecognisable pattern /%s/: %s", argv[0], regoops(ret, 0));
 
-    if (highlight != NONE) {
+    if (display == HIGHLIGHT) {
 #if USES_TERMCAP
 	static char tcbuf[2048], tcstrings[1024];
 	char *bufp = tcstrings;
