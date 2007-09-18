@@ -1,0 +1,22 @@
+CC=@CC@
+bindir=@bindir@
+mandir=@mandir@
+
+rgrep: rgrep.c
+	$(CC) -o rgrep rgrep.c @TERMCAP@
+
+install: install-bin install-man
+
+install-bin:
+	@INSTALL_DATA@ $(DESTDIR)@bindir@
+	@INSTALL_PROG@ rgrep $(DESTDIR)@bindir@/rgrep
+
+install-man:
+	@INSTALL_DIR@ $(DESTDIR)@mandir@/man1
+	@INSTALL_DATA@ rgrep.1 $(DESTDIR)@mandir@/man1
+
+spotless distclean: clean
+	rm -f @GENERATED_FILES@ @CONFIGURE_FILES@
+	
+clean:
+	rm -f rgrep
