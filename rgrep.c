@@ -528,8 +528,8 @@ char **argv;
 
     if (highlight != NONE) {
 #if USES_TERMCAP
-	static char tcbuf[2048+1024];
-	char *bufp;
+	static char tcbuf[2048], tcstrings[1024];
+	char *bufp = tcstrings;
 
 	if ( (vv = getenv("TERM")) && tgetent(tcbuf, vv) != 0) {
 	    SO = tgetstr("so", &bufp);

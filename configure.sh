@@ -32,7 +32,6 @@ LIBORDER="-lncurses -ltermcap -lcurses"
 TLOGN "looking for termcap..."
 if AC_LIBRARY tgetent $LIBORDER; then
     TLOG "(termcap)"
-    AC_CHECK_HEADERS termcap.h || AC_FAIL "rgrep needs <termcap.h>"
     # our -libtermcap might be (n)curses in disguise.  If so,
     # it might have a colliding mvcur() that we need to define
     # ourselves out from.
@@ -45,6 +44,7 @@ else
     TLOG "(no)"
     AC_FAIL "rgrep needs termcap, curses, or ncurses for match highlighting"
 fi
+AC_CHECK_HEADERS term.h || AC_FAIL "rgrep needs <term.h>"
 
 [ "$OS_FREEBSD" -o "$OS_DRAGONFLY" ] || AC_CHECK_HEADERS malloc.h
 
