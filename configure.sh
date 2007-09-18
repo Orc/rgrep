@@ -15,13 +15,10 @@ TARGET=rgrep
 AC_INIT $TARGET
 
 AC_PROG_CC
-
-AC_SCALAR_TYPES
-AC_CHECK_HEADERS limits.h || AC_DEFINE "INT_MAX" "1<<((sizeof(int)*8)-1)"
-
 AC_CHECK_ALLOCA || AC_FAIL "$TARGET requires alloca()"
-
 AC_CHECK_FUNCS mmap
+AC_CHECK_FUNCS fgetln
+AC_CHECK_FIELD dirent d_namlen sys/types.h dirent.h
 
 # for basename
 if AC_CHECK_FUNCS basename; then

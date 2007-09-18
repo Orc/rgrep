@@ -34,6 +34,8 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  *  OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "config.h"
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -43,7 +45,9 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <stdarg.h>
-#include <libgen.h> /* macosX for basename() */
+#if HAVE_LIBGEN_H
+#   include <libgen.h>
+#endif
 #include <string.h>
 #include <errno.h>
 #include <sysexits.h>
@@ -199,13 +203,13 @@ match(char *path, int lineno, char *start, char *end)
     rc = regexec(&pattern, start, 11, matches, REG_STARTEND|REG_BACKR);
 
     if (rc == 0) { /* found */
-	if ( except && (highlight == NONE) ) return 0;
+	if ( except /*&& (highlight == NONE)*/ ) return 0;
 	if ( listonly || countmatches ) return 1;
 	showmatch(matches, path, lineno, start, end);
 	return (rc == 0);
     }
     else if (rc == REG_NOMATCH) {
-	if ( !except && (highlight == NONE) ) return 0;
+	if ( !except /*&& (highlight == NONE)*/ ) return 0;
 	if ( listonly || countmatches ) return 1;
 	showmatch(0, path, lineno, start, end);
 	return (rc == REG_NOMATCH);
@@ -252,13 +256,22 @@ stream_grep(char *path, FILE *f)
 }
 
 
+#if HAVE_MMAP
+int
+mmap_grep(char *path, FILE *f)
+{
+}
+#endif
+
+
+#if HAVE_MMAP
 int
 grep(char *path, FILE *f)
 {
-    struct stat stb;
     char *map, *emap;
     char *start, *end;
     int matched=0, lineno=0;
+    struct stat stb;
 
     if ( (fstat(fileno(f), &stb) != 0) || !(stb.st_mode & S_IFREG) )
 	return stream_grep(path, f);
@@ -297,6 +310,9 @@ grep(char *path, FILE *f)
     munmap(map, stb.st_size);
     return matched;
 }
+#else
+#define grep(path,f) stream_grep(path,f)
+#endif
 
 
 int
@@ -327,6 +343,12 @@ dirgrep(char *path)
     int pathsize = strlen(path);
     int rc = 0;
     int isdir;
+#if HAVE_DIRENT_D_NAMLEN
+#define d_namlen(e) (e)->d_namlen
+#else
+    int d_namlen;
+#define d_namlen(e) d_namlen
+#endif
 
     if ( !recursive )
 	return 0;
@@ -340,13 +362,16 @@ dirgrep(char *path)
 	puts(path);
     
     while (e = readdir(d)) {
+#if !HAVE_DIRENT_D_NAMLEN
+	d_namlen(e) = strlen(e->d_name);
+#endif
 	if ( (e->d_name[0] == '.') && ( ((e->d_name[1] == '.')
-					 && (e->d_namlen == 2))
-					|| (e->d_namlen == 1)) )
+					 && (d_namlen(e) == 2))
+					|| (d_namlen(e) == 1)) )
 	continue;
 
-	if (pathsize + e->d_namlen + 2 > newpathsize) {
-	    newpathsize = pathsize + e->d_namlen + 2;
+	if (pathsize + d_namlen(e) + 2 > newpathsize) {
+	    newpathsize = pathsize + d_namlen(e) + 2;
 	    if (newpath)
 		newpath = realloc(newpath, newpathsize);
 	    else
@@ -370,7 +395,7 @@ dirgrep(char *path)
 	    regmatch_t lim[1];
     
 	    lim[0].rm_so = 0;
-	    lim[0].rm_eo = e->d_namlen;
+	    lim[0].rm_eo = d_namlen(e);
 
 	    if (regexec(filepattern, e->d_name, 0, lim, REG_STARTEND) != 0)
 		continue;
@@ -413,7 +438,14 @@ char **argv;
     int regflags = REG_BASIC;
     int rc;
 
+#if HAVE_BASENAME
     if (argv[0]) pgm = basename(argv[0]);
+#else
+    if (pgm = strrchr(argv[0], '/'))
+	++pgm;
+    else
+	pgm = argv[0];
+#endif
     
     opterr = 1;
     

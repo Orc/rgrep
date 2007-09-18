@@ -2,8 +2,8 @@ CC=@CC@
 bindir=@bindir@
 mandir=@mandir@
 
-rgrep: rgrep.c
-	$(CC) -o rgrep rgrep.c @TERMCAP@
+rgrep: rgrep.c config.h
+	$(CC) -o rgrep rgrep.c -ltermcap
 
 install: install-bin install-man
 
