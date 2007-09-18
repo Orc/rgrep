@@ -4,14 +4,15 @@
 # Put -Dconst= in for a pre-ANSI compiler.
 # Do not take -DPOSIX_MISTAKE out.
 # REGCFLAGS isn't important to you (it's for my use in some special contexts).
-CFLAGS=-I. -DPOSIX_MISTAKE -DREDEBUG $(REGCFLAGS)
+CFLAGS=@CFLAGS@ -I. -DPOSIX_MISTAKE -DREDEBUG $(REGCFLAGS)
+CC=@CC@
 
 # If you have a pre-ANSI compiler, put -o into MKHFLAGS.  If you want
 # the Berkeley __P macro, put -b in.
 MKHFLAGS=
 
 # Flags for linking but not compiling, if any.
-LDFLAGS=
+LDFLAGS=@LDFLAGS@
 
 # Extra libraries for linking, if any.
 LIBS=

@@ -3,7 +3,7 @@ bindir=@exedir@
 mandir=@mandir@
 
 rgrep: rgrep.c config.h regex/libregex.a VERSION
-	$(CC) -o rgrep -DVERSION=\"`cat VERSION`\" rgrep.c regex/libregex.a -ltermcap
+	$(CC) -o rgrep -DVERSION=\"`cat VERSION`\" rgrep.c regex/libregex.a @LIBS@
 
 regex/libregex.a:
 	cd regex && make lib

@@ -25,6 +25,27 @@ if AC_CHECK_FUNCS basename; then
     AC_CHECK_HEADERS libgen.h
 fi
 
+# need termcap, curses, or ncurses for termcap functions
+
+LIBORDER="-lncurses -ltermcap -lcurses"
+
+TLOGN "looking for termcap..."
+if AC_LIBRARY tgetent $LIBORDER; then
+    TLOG "(termcap)"
+    AC_CHECK_HEADERS termcap.h || AC_FAIL "rgrep needs <termcap.h>"
+    # our -libtermcap might be (n)curses in disguise.  If so,
+    # it might have a colliding mvcur() that we need to define
+    # ourselves out from.
+    AC_QUIET AC_CHECK_FUNCS mvcur && AC_DEFINE mvcur __mvcur
+    AC_DEFINE USES_TERMCAP 1
+elif AC_LIBRARY tigetstr $LIBORDER; then
+    AC_DEFINE USES_TERMINFO 1
+    TLOG "(terminfo)"
+else
+    TLOG "(no)"
+    AC_FAIL "rgrep needs termcap, curses, or ncurses for match highlighting"
+fi
+
 [ "$OS_FREEBSD" -o "$OS_DRAGONFLY" ] || AC_CHECK_HEADERS malloc.h
 
-AC_OUTPUT Makefile rgrep.1
+AC_OUTPUT Makefile regex/Makefile rgrep.1

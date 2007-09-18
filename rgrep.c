@@ -155,14 +155,14 @@ safewrite(regmatch_t lim[], char *start, char *end)
     
     if ( lim && (highlight == LINE) && (lim[0].rm_so >= 0) ) {
 	so = 1;
-	putp(SO);
+	tputs(SO, 1, putchar);
     }
     
     i = 0;
     while (start+i < end) {
 	if ( lim && (highlight == EXACT) && (lim[0].rm_so == i) ) {
 	    so = 1;
-	    putp(SO);
+	    tputs(SO, 1, putchar);
 	}
 	c = start[i++];
 	if ( (c == '\t') || (isprint(c) && c != '\r' && c != '\n') )
@@ -171,12 +171,12 @@ safewrite(regmatch_t lim[], char *start, char *end)
 	    putchar('?');
 	if ( lim && (highlight == EXACT) && (lim[0].rm_eo == i) ) {
 	    so = 0;
-	    putp(SE);
+	    tputs(SE, 1, putchar);
 	}
     }
 
     if (so)
-	putp(SE);
+	tputs(SE, 1, putchar);
 }
 
 
@@ -254,8 +254,9 @@ fgetblk(FILE *f, size_t *size)
 		error("runtime error: %s", strerror(errno));
 	}
 
-	if ( ((c = getchar()) == EOF) || (c == '\n') ) {
+	if ( ((c = getc(f)) == EOF) || (c == '\n') ) {
 	    recbfr[sz] = 0;
+	    *size = sz;
 	    return (c == '\n') || (sz > 0) ? recbfr : 0;
 	}
 	
@@ -370,12 +371,6 @@ dirgrep(char *path)
     int pathsize = strlen(path);
     int rc = 0;
     int isdir;
-#if HAVE_DIRENT_D_NAMLEN
-#define d_namlen(e) (e)->d_namlen
-#else
-    int d_namlen;
-#define d_namlen(e) d_namlen
-#endif
 
     if ( !recursive )
 	return 0;
@@ -389,16 +384,20 @@ dirgrep(char *path)
 	puts(path);
     
     while (e = readdir(d)) {
-#if !HAVE_DIRENT_D_NAMLEN
-	d_namlen(e) = strlen(e->d_name);
+#if HAVE_DIRENT_D_NAMLEN && !defined(d_namlen)
+#   define NAMLEN(e) (e)->d_namlen
+#else
+#   undef d_namlen
+	int d_namlen = strlen(e->d_name);
+#   define NAMLEN(e) d_namlen
 #endif
 	if ( (e->d_name[0] == '.') && ( ((e->d_name[1] == '.')
-					 && (d_namlen(e) == 2))
-					|| (d_namlen(e) == 1)) )
+					 && (NAMLEN(e) == 2))
+					|| (NAMLEN(e) == 1)) )
 	continue;
 
-	if (pathsize + d_namlen(e) + 2 > newpathsize) {
-	    newpathsize = pathsize + d_namlen(e) + 2;
+	if (pathsize + NAMLEN(e) + 2 > newpathsize) {
+	    newpathsize = pathsize + NAMLEN(e) + 2;
 	    if (newpath)
 		newpath = realloc(newpath, newpathsize);
 	    else
@@ -422,7 +421,7 @@ dirgrep(char *path)
 	    regmatch_t lim[1];
     
 	    lim[0].rm_so = 0;
-	    lim[0].rm_eo = d_namlen(e);
+	    lim[0].rm_eo = NAMLEN(e);
 
 	    if (regexec(filepattern, e->d_name, 0, lim, REG_STARTEND) != 0)
 		continue;
@@ -528,10 +527,20 @@ char **argv;
 	error("unrecognisable pattern /%s/: %s", argv[0], regoops(ret, 0));
 
     if (highlight != NONE) {
+#if USES_TERMCAP
+	static char tcbuf[2048+1024];
+	char *bufp;
+
+	if ( (vv = getenv("TERM")) && tgetent(tcbuf, vv) != 0) {
+	    SO = tgetstr("so", &bufp);
+	    SE = tgetstr("se", &bufp);
+	}
+#elif USES_TERMINFO
 	if ( (vv = getenv("TERM")) && setupterm(vv, fileno(stdout), 0) == OK) {
 	    SO = tigetstr("smso");
 	    SE = tigetstr("rmso");
 	}
+#endif
 	if ( (SO == 0) || (SE == 0) )
 	    error("cannot highlight matches on this terminal");
     }
