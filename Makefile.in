@@ -1,5 +1,5 @@
 CC=@CC@
-bindir=@bindir@
+bindir=@exedir@
 mandir=@mandir@
 
 rgrep: rgrep.c config.h regex/libregex.a
@@ -11,12 +11,12 @@ regex/libregex.a:
 install: install-bin install-man
 
 install-bin:
-	@INSTALL_DATA@ $(DESTDIR)@bindir@
-	@INSTALL_PROG@ rgrep $(DESTDIR)@bindir@/rgrep
+	@INSTALL_DIR@ $(DESTDIR)$(bindir)
+	@INSTALL_PROGRAM@ rgrep $(DESTDIR)$(bindir)/rgrep
 
 install-man:
-	@INSTALL_DIR@ $(DESTDIR)@mandir@/man1
-	@INSTALL_DATA@ rgrep.1 $(DESTDIR)@mandir@/man1
+	@INSTALL_DIR@ $(DESTDIR)$(mandir)/man1
+	@INSTALL_DATA@ rgrep.1 $(DESTDIR)$(mandir)/man1
 
 spotless distclean: clean
 	rm -f @GENERATED_FILES@ @CONFIGURE_FILES@
