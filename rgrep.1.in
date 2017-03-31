@@ -122,7 +122,7 @@ metacharacter is not implemented.
 .Li \e{ Ar ... Li \e}
 command is not fully implemented.
 .Sh AUTHOR
-David Parsons (<orc@pell.chi.il.us>)
+David Parsons (<orc@pell.portland.or.us>)
 .br
 The regular expression code is Henry Spencer's regex code (modified to support 
 .Ar \e< ,
