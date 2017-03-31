@@ -1018,7 +1018,6 @@ AC_OUTPUT () {
     
     cd "$__cwd"
     AC_SUB 'LIBS'    "$AC_LIBS"
-    AC_SUB 'CONFIGURE_FILES' "$__config_files"
     
     if test "$__MACOS_DSYM"; then
 	# deal with extra OSX droppings, if they exist
@@ -1078,6 +1077,8 @@ esac
 EOF
     fi
     chmod +x librarian.sh
+
+    AC_SUB 'CONFIGURE_FILES' "$__config_files"
 
     if [ -r config.sub ]; then
 	test "$AC_SED_PROG" || AC_PROG_SED
