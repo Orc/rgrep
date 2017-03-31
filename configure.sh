@@ -29,9 +29,7 @@ fi
 
 LIBORDER="-lncurses -ltermcap -lcurses"
 
-TLOGN "looking for termcap..."
 if AC_LIBRARY tgetent $LIBORDER; then
-    TLOG "(termcap)"
     # our -libtermcap might be (n)curses in disguise.  If so,
     # it might have a colliding mvcur() that we need to define
     # ourselves out from.
@@ -39,7 +37,6 @@ if AC_LIBRARY tgetent $LIBORDER; then
     AC_DEFINE USES_TERMCAP 1
 elif AC_LIBRARY tigetstr $LIBORDER; then
     AC_DEFINE USES_TERMINFO 1
-    TLOG "(terminfo)"
 else
     TLOG "(no)"
     AC_FAIL "rgrep needs termcap, curses, or ncurses for match highlighting"
