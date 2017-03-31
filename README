@@ -1,0 +1,10 @@
+Rgrep is a clone of the SLang-based rgrep that ships with the `jed`
+text editor.   It was written when I tried to port the SLang editor to a
+modern Linux distribution and was thwarted because the pre-packaged copies
+of the library were not complete enough to actually run the program.
+
+Rgrep implements most of the functionality of the reference program,
+lacking only {min,max} and \d in the regular expression language and the
+long options --version and --help.  It uses Henry Spencer's BSD-regex
+library (slightly modified to more closely resemble the SLang regular
+expression language) to provide a slow, but functional, recursive grep.

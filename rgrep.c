@@ -3,7 +3,7 @@
  *         the Jed editor, except that this one DOES NOT USE Slang
  * 
  * 
- *		Copyright (C) 2004-2005 David Loren Parsons.
+ *		Copyright (C) 2004-2017 David Loren Parsons.
  *			All rights reserved.
  *
  *  Permission is hereby granted, free of charge, to any person
@@ -16,11 +16,6 @@
  *
  *   1) Redistributions of source code must retain the above copyright
  *      notice, this list of conditions, and the following disclaimer.
- *
- *   2) Except as contained in this notice, the name of David Loren
- *      Parsons shall not be used in advertising or otherwise to promote
- *      the sale, use or other dealings in this Software without prior
- *      written authorization from David Loren Parsons.
  *
  *  THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
  *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
