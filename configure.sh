@@ -37,7 +37,6 @@ if AC_LIBRARY tgetent $LIBORDER; then
     AC_DEFINE USES_TERMCAP 1
 elif AC_LIBRARY tigetstr $LIBORDER; then
     AC_DEFINE USES_TERMINFO 1
-    TLOG "(terminfo)"
 else
     TLOG "(no)"
     AC_FAIL "rgrep needs termcap, curses, or ncurses for match highlighting"

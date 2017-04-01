@@ -1,0 +1,27 @@
+s;@CPP@;cc;g
+s;@CPPFLAGS@;-E -g;g
+s;@INSTALL@;/usr/bin/install;g
+s;@INSTALL_PROGRAM@;/usr/bin/install -s -m 755;g
+s;@INSTALL_DATA@;/usr/bin/install -m 444;g
+s;@INSTALL_DIR@;./config.md;g
+s;@LIBS@; -lncurses;g
+s;@GENERATED_FILES@;Makefile regex/Makefile rgrep.1;g
+s;@CC@;cc;g
+s;@CFLAGS@;-g;g
+s;@LDFLAGS@;-g;g
+s;@srcdir@;/home/orc/Src/rgrep;g
+s;@prefix@;/usr/local;g
+s;@exedir@;/usr/local/bin;g
+s;@bindir@;/usr/local/bin;g
+s;@sbindir@;/usr/local/sbin;g
+s;@libdir@;/usr/local/lib;g
+s;@libexec@;/usr/local/lib;g
+s;@confdir@;/etc;g
+s;@mandir@;/usr/local/man;g
+s;@FIND@;/usr/bin/find;g
+s;@LN_S@;/bin/ln -s;g
+s;@AR@;/usr/bin/ar;g
+s;@RANLIB@;/usr/bin/ranlib;g
+s;@LD_LIBRARY_PATH@;HERE;g
+s;@CONFIGURE_FILES@;config.cmd config.sub config.h config.mak config.log config.md librarian.sh;g
+s;@SED@;/usr/bin/sed;g
