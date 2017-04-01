@@ -29,9 +29,7 @@ fi
 
 LIBORDER="-lncurses -ltermcap -lcurses"
 
-TLOGN "looking for termcap..."
 if AC_LIBRARY tgetent $LIBORDER; then
-    TLOG "(termcap)"
     # our -libtermcap might be (n)curses in disguise.  If so,
     # it might have a colliding mvcur() that we need to define
     # ourselves out from.
