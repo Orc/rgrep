@@ -15,6 +15,8 @@ TARGET=rgrep
 AC_INIT $TARGET
 
 AC_PROG_CC
+unset _MK_LIBRARIAN
+
 AC_CHECK_ALLOCA || AC_FAIL "$TARGET requires alloca()"
 AC_CHECK_FUNCS mmap
 AC_CHECK_FUNCS fgetln

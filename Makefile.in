@@ -19,7 +19,7 @@ install-man:
 	@INSTALL_DATA@ rgrep.1 $(DESTDIR)$(mandir)/man1
 
 spotless distclean: clean
-	rm -f @GENERATED_FILES@ @CONFIGURE_FILES@
+	@DISTCLEAN@ @GENERATED_FILES@ @CONFIGURE_FILES@
 	
 clean:
 	cd regex && make clean
