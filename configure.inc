@@ -42,7 +42,16 @@ ac_standard="--src=DIR		where the source lives (.)
 --libexecdir=DIR	where to put private executables
 --mandir=DIR		where to put manpages"
 
-__fail=exit
+
+# remove files created by configure on abend
+#
+AC_EXIT() {
+    rm -f $__config_files
+    exit ${1:-1}
+}
+
+__fail=AC_EXIT
+
 
 if dirname B/A 2>/dev/null >/dev/null; then
 __ac_dirname() {
@@ -139,14 +148,14 @@ AC_CONTINUE () {
 __MAKEDOTO() {
     AC_PROG_CC
 
-    if $AC_CC -c -o ngc$$.o "$@" $AC_LIBS 2>ngc$$.err; then
+    if $AC_CC -c -o ngc$$.o "$@" $LIBS 2>ngc$$.err; then
 	__remove ngc$$.o ngc$$.err
 	TLOG " (found)"
 	return 0
     fi
     __remove ngc$$.o
     TLOG " (not found)"
-    echo "test failed:  command was $AC_CC -c -o ngc$$.o" "$@" $AC_LIBS
+    echo "test failed:  command was $AC_CC -c -o ngc$$.o" "$@" $LIBS
     echo "output:"
     cat ngc$$.err
     __remove ngc$$.err
@@ -298,7 +307,6 @@ EOF
     LOGN "looking for $type type"
 
     if __MAKEDOTO ngc$$.c; then
-	AC_DEFINE HAVE_`echo ${type} | $AC_UPPERCASE`
 	AC_DEFINE HAVE_`echo ${type} | $AC_UPPERCASE`
 	rc=0
     else
@@ -515,7 +523,7 @@ MF_PATH_INCLUDE () {
 # and fd 5 points to what used to be fd 1
 #
 AC_INIT () {
-    __config_files="config.cmd config.sub config.h config.mak config.log"
+    __config_files="config.cmd config.sub config.h config.mak"
     rm -f $__config_files
     __cwd=`pwd`
     exec 5>&1 1>"$__cwd"/config.log 2>&1
@@ -599,33 +607,24 @@ EOF
 # usage: AC_LIBRARY function library [alternate ...]
 #
 AC_LIBRARY() {
-    SRC=$1
+    local SRC=$1
     shift
-
-    __acllibs=
-    __aclhdrs=
-
-    for x in "$@"; do
-	case X"$x" in
-	X-l*) __acllibs="$__acllibs $x" ;;
-	*)    __aclhdrs="$__aclhdrs $x" ;;
-	esac
-    done
 
     # first see if the function can be found in any of the
     # current libraries
     LOGN "Looking for the ${SRC} function"
-    if AC_QUIET AC_CHECK_FUNCS $SRC $__aclhdrs; then
+    if AC_QUIET AC_CHECK_FUNCS $SRC; then
+	AC_DEFINE HAVE_LIB`echo $1 | sed -e 's/-l//' | $AC_UPPERCASE`
 	LOG "(found)"
 	return 0
     fi
 
     # then search through the supplied list of libraries
-    __libs="$LIBS"
-    for x in $__acllibs; do
+    local __libs="$LIBS"
+    for x in "$@"; do
 	LIBS="$__libs $x"
-	if AC_QUIET AC_CHECK_FUNCS $SRC $__aclhdrs; then
-	    AC_LIBS="$AC_LIBS $x"
+	if AC_QUIET AC_CHECK_FUNCS $SRC; then
+	    AC_DEFINE HAVE_LIB`echo $1 | sed -e 's/-l//' | $AC_UPPERCASE`
 	    LOG " (in $x)"
 	    return 0
 	fi
@@ -843,6 +842,7 @@ AC_CHECK_NORETURN() {
 	TLOG "(no)"
 	AC_DEFINE 'NORETURN' ''
     fi
+    rm -f ngc$$.o ngc$$.c
 }
 
 
@@ -948,13 +948,13 @@ AC_SCALAR_TYPES () {
     rc=1
     LOGN "defining WORD & DWORD scalar types"
     
-    if AC_QUIET AC_CHECK_HEADERS WinDef.h; then
-	# windows machine; BYTE, WORD, DWORD already
-	# defined
-	echo "#include <WinDef.h>" >> "$__cwd"/config.h
-	TLOG " (defined in WinDef.h)"
-	return 0
-    fi
+#    if AC_QUIET AC_CHECK_HEADERS WinDef.h; then
+#	# windows machine; BYTE, WORD, DWORD already
+#	# defined
+#	echo "#include <WinDef.h>" >> "$__cwd"/config.h
+#	TLOG " (defined in WinDef.h)"
+#	return 0
+#    fi
 	
     cat > ngc$$.c << EOF
 #include <stdio.h>
@@ -1004,12 +1004,10 @@ EOF
 	if [ $# -gt 0 ]; then
 	    while [ "$1" ]; do
 		case "$1" in
-		sub)TLOG "-sub"
-		    if ./ngc$$ sub >> "$__cwd"/config.sub; then
+		sub)if ./ngc$$ sub >> "$__cwd"/config.sub; then
 			rc=0
 		    fi;;
-		*)  TLOG "-$1"
-		    if ./ngc$$ >> "$__cwd"/config.h; then
+		*)  if ./ngc$$ >> "$__cwd"/config.h; then
 			rc=0
 		    fi ;;
 		esac
@@ -1039,7 +1037,7 @@ EOF
 AC_OUTPUT () {
     
     cd "$__cwd"
-    AC_SUB 'LIBS'    "$AC_LIBS"
+    AC_SUB 'LIBS'    "$LIBS"
     
     if test "$__MACOS_DSYM"; then
 	# deal with extra OSX droppings, if they exist
@@ -1109,10 +1107,10 @@ install)$PROG_INSTALL -m 644 \${LIBRARY}.a \$1
 	;;
 esac
 EOF
+	chmod +x librarian.sh
     fi
-    chmod +x librarian.sh
 
-    AC_SUB 'CONFIGURE_FILES' "$__config_files"
+    AC_SUB 'CONFIGURE_FILES' "$__config_files config.log"
 
     if [ -r config.sub ]; then
 	test "$AC_SED_PROG" || AC_PROG_SED
@@ -1228,13 +1226,13 @@ EOF
 	TLOG " (found)"
     elif $AC_CC -o ngc$$ ngc$$.c -lresolv; then
 	TLOG " (yes, with -lresolv)"
-	AC_LIBS="$AC_LIBS -lresolv"
+	LIBS="$LIBS -lresolv"
     elif $AC_CC -DBIND_8_COMPAT -o ngc$$ ngc$$.c; then
 	TLOG " (yes, with BIND_8_COMPAT)"
 	AC_DEFINE BIND_8_COMPAT 1
     elif $AC_CC -DBIND_8_COMPAT -o ngc$$ ngc$$.c -lresolv; then
 	TLOG " (yes, with BIND_8_COMPAT & -lresolv)"
-	AC_LIBS="$AC_LIBS -lresolv"
+	LIBS="$LIBS -lresolv"
 	AC_DEFINE BIND_8_COMPAT 1
     else
 	TLOG " (not found)"
@@ -1391,6 +1389,17 @@ __AC_ELF_LIBRARIAN() {
 	USE_SONAME=T
     fi
     LDCONFIG=`AC_PATH=/sbin:/usr/sbin:/usr/local/sbin acLookFor ldconfig`
+
+    if [ "$LDCONFIG" ]; then
+	case `uname -s 2>/dev/null | $AC_UPPERCASE` in
+	*BSD)	# *BSD ldconfig, when passed a directory, blows away the
+		# ld.so hints file and replaces it with one that's just
+		# the files in the library.   It needs a `-m` flag to
+		# tell it to merge the new entries with the old
+		LDCONFIG="$LDCONFIG -m" ;;
+	esac
+    fi
+    
     __config_files="$__config_files librarian.sh"
     cat > librarian.sh << EOF
 #! /bin/sh
@@ -1425,7 +1434,7 @@ install)$PROG_INSTALL -c \$FULLNAME "\$1"
 	$PROG_LN_S -f \$FULLNAME \$1/\$LIBNAME.\$MAJOR
 	$PROG_LN_S -f \$FULLNAME \$1/\$LIBNAME
 EOF
-    test "$LDCONFIG" && echo '	'$LDCONFIG '"\$1"' >> librarian.sh
+    test "$LDCONFIG" && echo '	'$LDCONFIG '"$1"' >> librarian.sh
     cat >> librarian.sh << EOF
 	;;
 esac
@@ -1536,7 +1545,7 @@ AC_PROG_INSTALL () {
     fi
 
     __config_files="$__config_files config.md"
-    AC_SUB 'INSTALL_DIR' "./config.md"
+    AC_SUB 'INSTALL_DIR' "$__cwd/config.md"
     echo "#! /bin/sh"                                   > ""$__cwd"/config.md"
     echo "# script generated" `date` "by configure.sh" >> ""$__cwd"/config.md"
     echo                                               >> ""$__cwd"/config.md"
@@ -1643,14 +1652,63 @@ AC_FAIL() {
 }
 
 #
-# AC_SUB writes a substitution into config.sub
-AC_SUB() {
-    (   _target="$1"
-	shift
-	_subst=`echo "$*" | sed -e 's/;/\\;/g'`
-	echo "s;@$_target@;$_subst;g" ) >> "$__cwd"/config.sub
+# __ac_config_sed; a C program to do escaping for AC_SUB
+__ac_config_sed() {
+
+
+    test -x config.sed && return
+
+    echo "generating config.sed"
+
+    AC_PROG_CC
+    
+cat > ngc$$.c << \EOF
+#include <stdio.h>
+
+int
+main(argc, argv)
+int argc;
+char **argv;
+{
+    char *p;
+    
+    if (argc != 3)
+	return 1;
+
+    printf("s;@%s@;", argv[1]);
+
+    for (p=argv[2]; *p; ++p) {
+	if ( *p == ';' )
+	    putchar('\\');
+	putchar(*p);
+    }
+
+    puts(";g");
+    return 0;
+}
+EOF
+
+    if $AC_CC -o config.sed ngc$$.c; then
+	rm -f ngc$$.c
+	__config_files="$__config_files config.sed"
+    else
+	rm -f ngc$$.c
+	AC_FAIL "Cannot generate config.sed helper program"
+    fi
 }
 
+#
+# AC_SUB writes a substitution into config.sub
+AC_SUB() {
+    
+    _target="$1"
+    shift
+
+    echo "target=$_target, rest=$*"
+    
+    __ac_config_sed
+    ./config.sed "$_target" "$*" >> "$__cwd"/config.sub
+}
 #
 # AC_TEXT writes arbitrary text into config.h
 AC_TEXT() {
